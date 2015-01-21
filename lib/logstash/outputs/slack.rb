@@ -24,6 +24,9 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
   # Icon URL to use
   config :icon_url, :validate => :string
 
+  # Attachments array as described https://api.slack.com/docs/attachments
+  config :attachments, :validate => :array
+
 
   public
   def register
@@ -55,6 +58,10 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
       payload_json['icon_emoji'] = @icon_emoji
     elsif not @icon_url.nil?
       payload_json['icon_url'] = @icon_url
+    end
+
+    if not @attachments.nil?
+      payload_json['attachments'] = @attachments
     end
 
     begin
