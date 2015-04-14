@@ -3,3 +3,6 @@ Gemfile.lock
 .ruby-version
 .bundle
 vendor
+lib/com
+lib/logstash-output-slack_jars.rb
+lib/org

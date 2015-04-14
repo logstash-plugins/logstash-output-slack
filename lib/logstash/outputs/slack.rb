@@ -24,17 +24,12 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
   # Icon URL to use
   config :icon_url, :validate => :string
 
-  # Attachments array as described https://api.slack.com/docs/attachments
-  config :attachments, :validate => :array
-
 
   public
   def register
-    require 'ftw'
+    require 'rest-client'
     require 'cgi'
     require 'json'
-
-    @agent = FTW::Agent.new
 
     @content_type = "application/x-www-form-urlencoded"
   end # def register
@@ -56,28 +51,26 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
 
     if not @icon_emoji.nil?
       payload_json['icon_emoji'] = @icon_emoji
-    elsif not @icon_url.nil?
+    end
+
+    if not @icon_url.nil?
       payload_json['icon_url'] = @icon_url
     end
 
-    if not @attachments.nil?
-      payload_json['attachments'] = @attachments
-    end
 
     begin
-      request = @agent.post(@url)
-      request["Content-Type"] = @content_type
-      request.body = "payload=#{CGI.escape(JSON.dump(payload_json))}"
-
-      response = @agent.execute(request)
-
-      # Consume body to let this connection be reused
-      rbody = ""
-      response.read_body { |c| rbody << c }
-      #puts rbody
+      RestClient.post(
+        @url,
+        "payload=#{CGI.escape(JSON.dump(payload_json))}",
+        :accept => "application/json",
+        :'User-Agent' => "logstash-output-slack",
+        :content_type => @content_type) { |response, request, result, &block|
+          if response.code != 200
+            @logger.warn("Got a #{response.code} result: " + result)
+          end
+        }
     rescue Exception => e
-      @logger.warn("Unhandled exception", :request => request,
-                   :response => response, :exception => e,
+      @logger.warn("Unhandled exception", :exception => e,
                    :stacktrace => e.backtrace)
     end
   end # def receive
