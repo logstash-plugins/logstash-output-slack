@@ -1,0 +1,18 @@
+language: ruby
+cache: bundler
+rvm:
+  - jruby-17mode # JRuby in 1.7 mode
+  - jruby-18mode # JRuby in 1.8 mode
+  - jruby-19mode # JRuby in 1.9 mode
+  - jruby-head
+
+jdk:
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+  - openjdk6
+
+script: bundle exec rspec spec
+
+notifications:
+  email: false
