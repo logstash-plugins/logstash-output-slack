@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg)](https://travis-ci.org/cyli/logstash-output-slack)
+[![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
 ## Logstash Slack Output Plugin
 
