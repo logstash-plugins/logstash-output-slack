@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
+Reviews of the code/contributions are very welcome (particularly with testing!), since I don't really know Ruby.
+
 ## Logstash Slack Output Plugin
 
 Uses Slack [incoming webhooks API](https://api.slack.com/incoming-webhooks) to send log events to Slack.
