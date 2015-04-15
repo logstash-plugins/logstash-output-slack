@@ -1,0 +1,14 @@
+language: ruby
+cache: bundler
+rvm:
+  - jruby-head
+
+jdk:
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+
+script: bundle exec rspec spec
+
+notifications:
+  email: false

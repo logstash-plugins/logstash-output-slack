@@ -1,86 +1,67 @@
-# Logstash Plugin
+[![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
-This is a plugin for [Logstash](https://github.com/elasticsearch/logstash).
+## Logstash Slack Output Plugin
 
-It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+Uses Slack [incoming webhooks API](https://api.slack.com/incoming-webhooks) to send log events to Slack.
 
-## Documentation
+Usage:
 
-Logstash provides infrastructure to automatically generate documentation for this plugin. We use the asciidoc format to write documentation so any comments in the source code will be first converted into asciidoc and then into html. All plugin documentation are placed under one [central location](http://www.elasticsearch.org/guide/en/logstash/current/).
+```
+input {
+    ...
+}
 
-- For formatting code or config example, you can use the asciidoc `[source,ruby]` directive
-- For more asciidoc formatting tips, see the excellent reference here https://github.com/elasticsearch/docs#asciidoc-guide
+filters {
+    ...
+}
 
-## Need Help?
-
-Need help? Try #logstash on freenode IRC or the logstash-users@googlegroups.com mailing list.
-
-## Developing
-
-### 1. Plugin Developement and Testing
-
-#### Code
-- To get started, you'll need JRuby with the Bundler gem installed.
-
-- Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
-
-- Install dependencies
-```sh
-bundle install
+output {
+    ...
+    slack {
+        url => <YOUR SLACK WEBHOOK URL HERE>
+        channel => [channel-name - this is optional]
+        username => [slack username - this is optional]
+        icon_emoji => [emoji, something like ":simple_smile:" - optional]
+        icon_url => [icon url, would be overriden by icon_emoji - optional]
+        format => [default is "%{message}", but used to format the text - optional]
+    }
+}
 ```
 
-#### Test
+Not supported yet: attachments
 
-- Update your dependencies
+### Installation on Logstash >= 1.5
 
-```sh
-bundle install
+In the logstash directory, run:  `bin/plugin install logstash-output-slack`
+
+#### To build your own gem and install:
+
+1. `git clone <thisrepo>`
+1. `bundle install`
+1. `gem build logstash-output-slack.gemspec`
+
+You should just be able to do `bin/plugin install <path-to-your-built-gem>`, but due to [this bug](https://github.com/elastic/logstash/issues/2674) installing from a local gem doesn't work right now.
+
+You need to:
+
+1. Make sure that the `logstash-core` gem you've installed matches the exact beta 1.5 logstash version you are running.
+1. modify the logstash Gemfile to include the line `gem "logstash-output-slack", :path => <path_to_the_directory_your_gem_is_in>`
+1. `bin/plugin install --no-verify`
+
+#### Verify that the plugin installed correctly
+`bin/plugin list | grep logstash-output-slack`
+
+#### Test that it works:
+```
+bin/logstash -e '
+input { stdin {} }
+output { slack { <your slack config here> }}'
 ```
 
-- Run tests
+And type some text in.  The same text should appear in the channel it's configured to go in.
 
-```sh
-bundle exec rspec
-```
+### Installation on Logstash < 1.4
 
-### 2. Running your unpublished Plugin in Logstash
+Gem-installing this plugin would only work on Logstash 1.5.  For Logstash < 1.5, you could just rename `lib` in this repo to `logstash`, and then run Logstash with `--pluginpath <path_to_this_repo>.
 
-#### 2.1 Run in a local Logstash clone
-
-- Edit Logstash `Gemfile` and add the local plugin path, for example:
-```ruby
-gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
-```
-- Install plugin
-```sh
-bin/plugin install --no-verify
-```
-- Run Logstash with your plugin
-```sh
-bin/logstash -e 'filter {awesome {}}'
-```
-At this point any modifications to the plugin code will be applied to this local Logstash setup. After modifying the plugin, simply rerun Logstash.
-
-#### 2.2 Run in an installed Logstash
-
-You can use the same **2.1** method to run your plugin in an installed Logstash by editing its `Gemfile` and pointing the `:path` to your local plugin development directory or you can build the gem and install it using:
-
-- Build your plugin gem
-```sh
-gem build logstash-filter-awesome.gemspec
-```
-- Install the plugin from the Logstash home
-```sh
-bin/plugin install /your/local/plugin/logstash-filter-awesome.gem
-```
-- Start Logstash and proceed to test the plugin
-
-## Contributing
-
-All contributions are welcome: ideas, patches, documentation, bug reports, complaints, and even something you drew up on a napkin.
-
-Programming is not a required skill. Whatever you've seen about open source and maintainers or community members  saying "send patches or die" - you will not see that here.
-
-It is more important to the community that you are able to contribute.
-
-For more information about contributing, see the [CONTRIBUTING](https://github.com/elasticsearch/logstash/blob/master/CONTRIBUTING.md) file.
+See the [flags](http://logstash.net/docs/1.4.2/flags) documentation for Logstash 1.4.
