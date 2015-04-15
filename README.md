@@ -1,10 +1,19 @@
 [![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
-## Logstash Slack Output Plugin
 
-Uses Slack [incoming webhooks API](https://api.slack.com/incoming-webhooks) to send log events to Slack.
+# Logstash Slack Output Plugin
 
-Usage:
+This is a plugin for [Logstash](https://github.com/elasticsearch/logstash) that pushes log events to [Slack](www.slack.com) using their [incoming webhooks API](https://api.slack.com/incoming-webhooks).
+
+It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+
+to send log events to Slack.
+
+## Need Help?
+
+Need help? Try #logstash on freenode IRC or the logstash-users@googlegroups.com mailing list.
+
+## Usage
 
 ```
 input {
@@ -29,6 +38,34 @@ output {
 ```
 
 Not supported yet: attachments
+
+## Developing
+
+### 1. Plugin Developement and Testing
+
+#### Code
+- To get started, you'll need JRuby with the Bundler gem installed.
+
+- Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
+
+- Install dependencies
+```sh
+bundle install
+```
+
+#### Test
+
+- Update your dependencies
+
+```sh
+bundle install
+```
+
+- Run tests
+
+```sh
+bundle exec rspec
+```
 
 ### Installation on Logstash >= 1.5
 
@@ -65,3 +102,13 @@ And type some text in.  The same text should appear in the channel it's configur
 Gem-installing this plugin would only work on Logstash 1.5.  For Logstash < 1.5, you could just rename `lib` in this repo to `logstash`, and then run Logstash with `--pluginpath <path_to_this_repo>.
 
 See the [flags](http://logstash.net/docs/1.4.2/flags) documentation for Logstash 1.4.
+
+## Contributing
+
+All contributions are welcome: ideas, patches, documentation, bug reports, complaints, and even something you drew up on a napkin.
+
+Programming is not a required skill. Whatever you've seen about open source and maintainers or community members  saying "send patches or die" - you will not see that here.
+
+It is more important to the community that you are able to contribute.
+
+For more information about contributing, see the [CONTRIBUTING](https://github.com/elastic/logstash/blob/master/CONTRIBUTING.md) file.
