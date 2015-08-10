@@ -66,7 +66,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
         :'User-Agent' => "logstash-output-slack",
         :content_type => @content_type) { |response, request, result, &block|
           if response.code != 200
-            @logger.warn("Got a #{response.code} result: " + result)
+            @logger.warn("Got a #{response.code} response: #{response}")
           end
         }
     rescue Exception => e
