@@ -21,4 +21,4 @@ matrix:
     - rvm: jruby-head
   exclude:
     - rvm: jruby-head
-      jdk: openjkd6
+      jdk: openjdk6
