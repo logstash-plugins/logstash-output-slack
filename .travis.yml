@@ -1,8 +1,7 @@
 language: ruby
 cache: bundler
 rvm:
-  - jruby-1.7.19
-  - jruby 1.7.22
+  - jruby 1.7.21
   - jruby-head
 
 jdk:
