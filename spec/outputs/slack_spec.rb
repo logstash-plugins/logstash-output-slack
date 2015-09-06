@@ -22,7 +22,7 @@ describe LogStash::Outputs::Slack do
       input {
         generator {
           message => "This message should show in slack"
-          add_field => {"extra" => 3}
+          add_field => {"extra" => "3"}
           count => 1
         }
       }
