@@ -33,12 +33,12 @@ output {
 Not supported yet: attachments
 
 ### Changelog:
-- v 0.1.1:
+- [v0.1.1](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.1):
     - Added variable expansion to usernames and channel names ([#6](https://github.com/cyli/logstash-output-slack/pull/6))
     - Fixed bug when reporting malformed requests ([#3](https://github.com/cyli/logstash-output-slack/pull/3))
     - Test fixes since newer versions of logstash-core expects the values in
         the `add_field` hash to not be integers.
-- v 0.1.0:
+- [v0.1.0](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.0):
     - initial version containing basic slack functionality
 
 ### Installation on Logstash >= 1.5
@@ -53,7 +53,7 @@ In the logstash directory, run:  `bin/plugin install logstash-output-slack`, whi
 1. `cd <path to logstash>`
 1. `logstash>1.5.0`: `bin/plugin install <path-to-your-built-gem>`
 
-    On `logstash==1.5.0`, due to [this bug](https://github.com/elastic/logstash/issues/2674), installing from a local gem doesn't work right now. You will need to:
+    On `logstash==1.5.0`, due to [this bug](https://github.com/elastic/logstash/issues/2674), installing from a local gem doesn't work. You will need to:
 
     1. Make sure that the `logstash-core` gem you've installed matches the exact beta 1.5 logstash version you are running.
     1. modify the logstash Gemfile to include the line `gem "logstash-output-slack", :path => <path_to_the_directory_your_gem_is_in>`
@@ -71,7 +71,7 @@ output { slack { <your slack config here> }}'
 
 And type some text in.  The same text should appear in the channel it's configured to go in.
 
-### Installation on Logstash < 1.4
+### Installation on Logstash < 1.5
 
 Gem-installing this plugin would only work on Logstash 1.5.  For Logstash < 1.5, you could just rename `lib` in this repo to `logstash`, and then run Logstash with `--pluginpath <path_to_this_repo>.
 
