@@ -42,11 +42,11 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     payload_json['text'] = event.sprintf(@format)
 
     if not @channel.nil?
-      payload_json['channel'] = @channel
+      payload_json['channel'] = event.sprintf(@channel)
     end
 
     if not @username.nil?
-      payload_json['username'] = @username
+      payload_json['username'] = event.sprintf(@username)
     end
 
     if not @icon_emoji.nil?
@@ -66,7 +66,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
         :'User-Agent' => "logstash-output-slack",
         :content_type => @content_type) { |response, request, result, &block|
           if response.code != 200
-            @logger.warn("Got a #{response.code} result: " + result)
+            @logger.warn("Got a #{response.code} response: #{response}")
           end
         }
     rescue Exception => e

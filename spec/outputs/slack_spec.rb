@@ -18,11 +18,13 @@ describe LogStash::Outputs::Slack do
   CONFIG
   end
 
-  let(:long_config) do <<-CONFIG
+  let(:long_formatted_config) do <<-CONFIG
       input {
         generator {
           message => "This message should show in slack"
-          add_field => {"extra" => 3}
+          add_field => {"x" => "3"
+                        "channelname" => "mychannel"
+                        "username" => "slackbot"}
           count => 1
         }
       }
@@ -30,7 +32,28 @@ describe LogStash::Outputs::Slack do
       output {
         slack {
           url => "http://requestb.in/r9lkbzr9"
-          format => "%{message} %{extra}"
+          format => "%{message} %{x}"
+          channel => "%{channelname}"
+          username => "%{username}"
+          icon_emoji => ":chart_with_upwards_trend:"
+          icon_url => "http://lorempixel.com/48/48"
+        }
+      }
+  CONFIG
+  end
+
+  let(:long_unformatted_config) do <<-CONFIG
+      input {
+        generator {
+          message => "This message should not show in slack"
+          count => 1
+        }
+      }
+
+      output {
+        slack {
+          url => "http://requestb.in/r9lkbzr9"
+          format => "Unformatted message"
           channel => "mychannel"
           username => "slackbot"
           icon_emoji => ":chart_with_upwards_trend:"
@@ -71,7 +94,7 @@ describe LogStash::Outputs::Slack do
         to have_been_made.once
     end
 
-    it "uses all provided values" do
+    it "uses and formats all provided values" do
       stub_request(:post, "requestb.in").
         to_return(:body => "", :status => 200,
                   :headers => { 'Content-Length' => 0 })
@@ -84,7 +107,7 @@ describe LogStash::Outputs::Slack do
         :icon_url => "http://lorempixel.com/48/48"
       }
 
-      LogStash::Pipeline.new(long_config).run
+      LogStash::Pipeline.new(long_formatted_config).run
 
       expect(a_request(:post, "http://requestb.in/r9lkbzr9").
         with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
@@ -96,5 +119,29 @@ describe LogStash::Outputs::Slack do
         to have_been_made.once
     end
 
+    it "uses and formats all provided values" do
+      stub_request(:post, "requestb.in").
+        to_return(:body => "", :status => 200,
+                  :headers => { 'Content-Length' => 0 })
+
+      expected_json = {
+        :text => "Unformatted message",
+        :channel => "mychannel",
+        :username => "slackbot",
+        :icon_emoji => ":chart_with_upwards_trend:",
+        :icon_url => "http://lorempixel.com/48/48"
+      }
+
+      LogStash::Pipeline.new(long_unformatted_config).run
+
+      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
+        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
+             :headers => {
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'Accept'=> 'application/json',
+                'User-Agent' => 'logstash-output-slack'
+                })).
+        to have_been_made.once
+    end
   end
 end
