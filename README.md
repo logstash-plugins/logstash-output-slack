@@ -1,18 +1,21 @@
 [![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
 =======
-
 # Logstash Slack Output Plugin
 
 This is a plugin for [Logstash](https://github.com/elasticsearch/logstash) that pushes log events to [Slack](www.slack.com) using their [incoming webhooks API](https://api.slack.com/incoming-webhooks).
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
 
-to send log events to Slack.
+=======
+Logstash provides infrastructure to automatically generate documentation for this plugin. We use the asciidoc format to write documentation so any comments in the source code will be first converted into asciidoc and then into html. All plugin documentation are placed under one [central location](http://www.elastic.co/guide/en/logstash/current/).
+
+- For formatting code or config example, you can use the asciidoc `[source,ruby]` directive
+- For more asciidoc formatting tips, see the excellent reference here https://github.com/elastic/docs#asciidoc-guide.
 
 ## Need Help?
 
-Need help? Try #logstash on freenode IRC or the logstash-users@googlegroups.com mailing list.
+Need help? Try #logstash on freenode IRC or the https://discuss.elastic.co/c/logstash discussion forum.
 
 ## Usage
 
@@ -39,16 +42,6 @@ output {
 ```
 
 Not supported yet: attachments
-
-## Changelog:
-- [v0.1.1](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.1):
-    - Added variable expansion to usernames and channel names ([#6](https://github.com/cyli/logstash-output-slack/pull/6))
-    - Fixed bug when reporting malformed requests ([#3](https://github.com/cyli/logstash-output-slack/pull/3))
-    - Test fixes since newer versions of logstash-core expects the values in
-        the `add_field` hash to not be integers.
-- [v0.1.0](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.0):
-    - initial version containing basic slack functionality
-
 
 ## Developing
 
