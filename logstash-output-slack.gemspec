@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "output" }
 
   # Gem dependencies
-  if JRUBY_VERSION < "1.8"
+  if java.lang.System.get_property('java.version') < "1.7"  # jdk6
     s.add_runtime_dependency "logstash-core", "<= 2.0.0.snapshot3", ">= 1.4.0"
   else
     s.add_runtime_dependency "logstash-core", "~> 2.0.0.snapshot3", ">= 1.4.0"
