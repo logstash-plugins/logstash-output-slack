@@ -2,67 +2,6 @@ require_relative "../spec_helper"
 
 describe LogStash::Outputs::Slack do
 
-  let(:short_config) do <<-CONFIG
-      input {
-        generator {
-          message => "This message should show in slack"
-          count => 1
-        }
-      }
-
-      output {
-        slack {
-          url => "http://requestb.in/r9lkbzr9"
-        }
-      }
-  CONFIG
-  end
-
-  let(:long_formatted_config) do <<-CONFIG
-      input {
-        generator {
-          message => "This message should show in slack"
-          add_field => {"x" => "3"
-                        "channelname" => "mychannel"
-                        "username" => "slackbot"}
-          count => 1
-        }
-      }
-
-      output {
-        slack {
-          url => "http://requestb.in/r9lkbzr9"
-          format => "%{message} %{x}"
-          channel => "%{channelname}"
-          username => "%{username}"
-          icon_emoji => ":chart_with_upwards_trend:"
-          icon_url => "http://lorempixel.com/48/48"
-        }
-      }
-  CONFIG
-  end
-
-  let(:long_unformatted_config) do <<-CONFIG
-      input {
-        generator {
-          message => "This message should not show in slack"
-          count => 1
-        }
-      }
-
-      output {
-        slack {
-          url => "http://requestb.in/r9lkbzr9"
-          format => "Unformatted message"
-          channel => "mychannel"
-          username => "slackbot"
-          icon_emoji => ":chart_with_upwards_trend:"
-          icon_url => "http://lorempixel.com/48/48"
-        }
-      }
-  CONFIG
-  end
-
   before do
     WebMock.disable_net_connect!
   end
@@ -82,7 +21,20 @@ describe LogStash::Outputs::Slack do
         :text => "This message should show in slack"
       }
 
-      LogStash::Pipeline.new(short_config).run
+      LogStash::Pipeline.new(<<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+            }
+          }
+      CONFIG
+      ).run
 
       expect(a_request(:post, "http://requestb.in/r9lkbzr9").
         with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
@@ -107,7 +59,28 @@ describe LogStash::Outputs::Slack do
         :icon_url => "http://lorempixel.com/48/48"
       }
 
-      LogStash::Pipeline.new(long_formatted_config).run
+      LogStash::Pipeline.new(<<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              add_field => {"x" => "3"
+                            "channelname" => "mychannel"
+                            "username" => "slackbot"}
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              format => "%{message} %{x}"
+              channel => "%{channelname}"
+              username => "%{username}"
+              icon_emoji => ":chart_with_upwards_trend:"
+              icon_url => "http://lorempixel.com/48/48"
+            }
+          }
+      CONFIG
+      ).run
 
       expect(a_request(:post, "http://requestb.in/r9lkbzr9").
         with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
@@ -132,7 +105,25 @@ describe LogStash::Outputs::Slack do
         :icon_url => "http://lorempixel.com/48/48"
       }
 
-      LogStash::Pipeline.new(long_unformatted_config).run
+      LogStash::Pipeline.new(<<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              format => "Unformatted message"
+              channel => "mychannel"
+              username => "slackbot"
+              icon_emoji => ":chart_with_upwards_trend:"
+              icon_url => "http://lorempixel.com/48/48"
+            }
+          }
+      CONFIG
+      ).run
 
       expect(a_request(:post, "http://requestb.in/r9lkbzr9").
         with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
