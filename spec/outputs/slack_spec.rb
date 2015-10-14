@@ -2,6 +2,26 @@ require_relative "../spec_helper"
 
 describe LogStash::Outputs::Slack do
 
+  # Actually do most of the boiler plate by stubbing out the request, running
+  # the logstash pipeline, and asserting that a request was made with the
+  # expected JSON.
+  def test_one_event(logstash_config, expected_json)
+    stub_request(:post, "requestb.in").
+      to_return(:body => "", :status => 200,
+                :headers => { 'Content-Length' => 0 })
+
+    LogStash::Pipeline.new(logstash_config).run
+
+    expect(a_request(:post, "http://requestb.in/r9lkbzr9").
+           with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
+                :headers => {
+                  'Content-Type' => 'application/x-www-form-urlencoded',
+                  'Accept'=> 'application/json',
+                  'User-Agent' => 'logstash-output-slack'
+                  })).
+           to have_been_made.once
+  end
+
   before do
     WebMock.disable_net_connect!
   end
@@ -11,17 +31,12 @@ describe LogStash::Outputs::Slack do
     WebMock.allow_net_connect!
   end
 
-  context "passes the right payload to slack" do
+  context "passes the right payload to slack and" do
     it "uses all default values" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
       expected_json = {
         :text => "This message should show in slack"
       }
-
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -34,23 +49,11 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "uses and formats all provided values" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
       expected_json = {
         :text => "This message should show in slack 3",
         :channel => "mychannel",
@@ -59,7 +62,7 @@ describe LogStash::Outputs::Slack do
         :icon_url => "http://lorempixel.com/48/48"
       }
 
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -80,23 +83,11 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "uses and formats all provided values" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
       expected_json = {
         :text => "Unformatted message",
         :channel => "mychannel",
@@ -105,7 +96,7 @@ describe LogStash::Outputs::Slack do
         :icon_url => "http://lorempixel.com/48/48"
       }
 
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -123,16 +114,8 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
   end
 end
