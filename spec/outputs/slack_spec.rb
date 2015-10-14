@@ -119,16 +119,12 @@ describe LogStash::Outputs::Slack do
     end
 
     it "uses the default attachments if none are in the event" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
       expected_json = {
         :text => "This message should show in slack",
         :attachments => [{:image_url => "http://example.com/image.png"}]
       }
 
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -144,28 +140,16 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "ignores empty default attachments" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
       expected_json = {
         :text => "This message should show in slack"
       }
 
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -179,32 +163,18 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "uses event attachments over default attachments" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
-      attachments =
-
       expected_json = {
         :text => "This message should show in slack",
         :attachments => [{:thumb_url => "http://other.com/thumb.png"}]
       }
 
-      # add_field only takes string values
-      LogStash::Pipeline.new(<<-CONFIG
+      # add_field only takes string values, so we'll have to mutate to JSON
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -229,31 +199,17 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "erases default attachments if event attachments empty" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
-      attachments =
-
       expected_json = {
         :text => "This message should show in slack"
       }
 
-      # add_field only takes string values
-      LogStash::Pipeline.new(<<-CONFIG
+      # add_field only takes string values, so we'll have to mutate to JSON
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -276,32 +232,17 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
 
     it "ignores event attachment if not array" do
-      stub_request(:post, "requestb.in").
-        to_return(:body => "", :status => 200,
-                  :headers => { 'Content-Length' => 0 })
-
-      attachments =
-
       expected_json = {
         :text => "This message should show in slack",
         :attachments => [{:image_url => "http://example.com/image.png"}]
       }
 
-      # add_field only takes string values
-      LogStash::Pipeline.new(<<-CONFIG
+      logstash_config = <<-CONFIG
           input {
             generator {
               message => "This message should show in slack"
@@ -318,16 +259,8 @@ describe LogStash::Outputs::Slack do
             }
           }
       CONFIG
-      ).run
 
-      expect(a_request(:post, "http://requestb.in/r9lkbzr9").
-        with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
-             :headers => {
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Accept'=> 'application/json',
-                'User-Agent' => 'logstash-output-slack'
-                })).
-        to have_been_made.once
+      test_one_event(logstash_config, expected_json)
     end
   end
 end
