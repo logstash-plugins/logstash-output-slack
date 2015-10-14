@@ -144,6 +144,34 @@ describe LogStash::Outputs::Slack do
       test_one_event(logstash_config, expected_json)
     end
 
+    it "supports multiple default attachments" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:image_url => "http://example.com/image1.png"},
+                         {:image_url => "http://example.com/image2.png"}]
+      }
+
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
     it "ignores empty default attachments" do
       expected_json = {
         :text => "This message should show in slack"
@@ -194,7 +222,8 @@ describe LogStash::Outputs::Slack do
             slack {
               url => "http://requestb.in/r9lkbzr9"
               attachments => [
-                {image_url => "http://example.com/image.png"}
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
               ]
             }
           }
@@ -227,7 +256,8 @@ describe LogStash::Outputs::Slack do
             slack {
               url => "http://requestb.in/r9lkbzr9"
               attachments => [
-                {image_url => "http://example.com/image.png"}
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
               ]
             }
           }
