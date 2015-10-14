@@ -21,18 +21,19 @@ output {
     ...
     slack {
         url => <YOUR SLACK WEBHOOK URL HERE>
-        channel => [channel-name - this is optional]
-        username => [slack username - this is optional]
+        channel => [channel-name - optional]
+        username => [slack username - optional]
         icon_emoji => [emoji, something like ":simple_smile:" - optional]
         icon_url => [icon url, would be overriden by icon_emoji - optional]
         format => [default is "%{message}", but used to format the text - optional]
+        attachments => [an array of attachment maps as specified by the slack API - optional; if there is an "attachments" field in the event map and it is valid, it will override what is configured here, even if it's empty]
     }
 }
 ```
 
-Not supported yet: attachments
-
 ### Changelog:
+- [v0.1.2](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.2):
+    - Added support for attachments
 - [v0.1.1](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.1):
     - Added variable expansion to usernames and channel names ([#6](https://github.com/cyli/logstash-output-slack/pull/6))
     - Fixed bug when reporting malformed requests ([#3](https://github.com/cyli/logstash-output-slack/pull/3))
