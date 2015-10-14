@@ -117,5 +117,180 @@ describe LogStash::Outputs::Slack do
 
       test_one_event(logstash_config, expected_json)
     end
+
+    it "uses the default attachments if none are in the event" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:image_url => "http://example.com/image.png"}]
+      }
+
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
+    it "supports multiple default attachments" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:image_url => "http://example.com/image1.png"},
+                         {:image_url => "http://example.com/image2.png"}]
+      }
+
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
+    it "ignores empty default attachments" do
+      expected_json = {
+        :text => "This message should show in slack"
+      }
+
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => []
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
+    it "uses event attachments over default attachments" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:thumb_url => "http://other.com/thumb.png"}]
+      }
+
+      # add_field only takes string values, so we'll have to mutate to JSON
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+              add_field => {
+                attachments => '[{"thumb_url": "http://other.com/thumb.png"}]'
+              }
+            }
+          }
+          filter {
+            json {
+              source => "attachments"
+              target => "attachments"
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
+    it "erases default attachments if event attachments empty" do
+      expected_json = {
+        :text => "This message should show in slack"
+      }
+
+      # add_field only takes string values, so we'll have to mutate to JSON
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+              add_field => {attachments => '[]'}
+            }
+          }
+          filter {
+            json {
+              source => "attachments"
+              target => "attachments"
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image1.png"},
+                {image_url => "http://example.com/image2.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
+
+    it "ignores event attachment if not array" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:image_url => "http://example.com/image.png"}]
+      }
+
+      logstash_config = <<-CONFIG
+          input {
+            generator {
+              message => "This message should show in slack"
+              count => 1
+              add_field => {attachments => "baddata"}
+            }
+          }
+          output {
+            slack {
+              url => "http://requestb.in/r9lkbzr9"
+              attachments => [
+                {image_url => "http://example.com/image.png"}
+              ]
+            }
+          }
+      CONFIG
+
+      test_one_event(logstash_config, expected_json)
+    end
   end
 end

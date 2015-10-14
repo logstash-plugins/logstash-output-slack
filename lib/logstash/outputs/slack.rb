@@ -24,6 +24,8 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
   # Icon URL to use
   config :icon_url, :validate => :string
 
+  # Attachments array as described https://api.slack.com/docs/attachments
+  config :attachments, :validate => :array
 
   public
   def register
@@ -57,6 +59,19 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
       payload_json['icon_url'] = @icon_url
     end
 
+    if @attachments and @attachments.any?
+      payload_json['attachments'] = @attachments
+    end
+    if event.include?('attachments') and event['attachments'].is_a?(Array)
+      if event['attachments'].any?
+        # need to convert possibly from Java objects to Ruby Array, because
+        # JSON dumps does not work well with Java ArrayLists, etc.
+        rubified = JSON.parse(event.to_json())
+        payload_json['attachments'] = rubified['attachments']
+      else
+        payload_json.delete('attachments')
+      end
+    end
 
     begin
       RestClient.post(
