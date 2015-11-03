@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/cyli/logstash-output-slack.svg?branch=master)](https://travis-ci.org/cyli/logstash-output-slack)
 
-# Logstash Slack Output Plugin
+Reviews of the code/contributions are very welcome (particularly with testing!), since I don't really know Ruby.
+
+## Logstash Slack Output Plugin
 
 [![Build
 Status](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Outputs/job/logstash-plugin-output-slack-unit/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Outputs/job/logstash-plugin-output-slack-unit/)
@@ -34,46 +36,30 @@ output {
     ...
     slack {
         url => <YOUR SLACK WEBHOOK URL HERE>
-        channel => [channel-name - this is optional]
-        username => [slack username - this is optional]
+        channel => [channel-name - optional]
+        username => [slack username - optional]
         icon_emoji => [emoji, something like ":simple_smile:" - optional]
         icon_url => [icon url, would be overriden by icon_emoji - optional]
         format => [default is "%{message}", but used to format the text - optional]
+        attachments => [an array of attachment maps as specified by the slack API - optional; if there is an "attachments" field in the event map and it is valid, it will override what is configured here, even if it's empty]
     }
 }
 ```
 
-Not supported yet: attachments
+### Changelog:
+- [v0.1.2](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.2):
+    - Added support for attachments
+- [v0.1.1](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.1):
+    - Added variable expansion to usernames and channel names ([#6](https://github.com/cyli/logstash-output-slack/pull/6))
+    - Fixed bug when reporting malformed requests ([#3](https://github.com/cyli/logstash-output-slack/pull/3))
+    - Test fixes since newer versions of logstash-core expects the values in
+        the `add_field` hash to not be integers.
+- [v0.1.0](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.0):
+    - initial version containing basic slack functionality
 
 ## Developing
 
 ### 1. Plugin Developement and Testing
-
-#### Code
-- To get started, you'll need JRuby with the Bundler gem installed.
-
-- Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
-
-- Install dependencies
-```sh
-bundle install
-```
-
-#### Test
-
-- Update your dependencies
-
-```sh
-bundle install
-```
-
-- Run tests
-
-```sh
-bundle exec rspec
-```
-
-## Installation on Logstash >= 1.5
 
 In the logstash directory, run:  `bin/plugin install logstash-output-slack`, which will download and install the public gem.
 
