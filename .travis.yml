@@ -1,0 +1,22 @@
+language: ruby
+cache: bundler
+rvm:
+  - jruby 1.7.21
+  - jruby-head
+
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+
+script: bundle exec rspec spec
+
+notifications:
+  email: false
+
+matrix:
+  fast_finish: true
+  exclude:
+    - rvm: jruby-head
+      jdk: openjdk6

@@ -1,5 +1,7 @@
-## 2.0.0
- - Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully, 
-   instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
- - Dependency on logstash-core update to 2.0
-
+- [v0.1.1](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.1):
+    - Added variable expansion to usernames and channel names ([#6](https://github.com/cyli/logstash-output-slack/pull/6))
+    - Fixed bug when reporting malformed requests ([#3](https://github.com/cyli/logstash-output-slack/pull/3))
+    - Test fixes since newer versions of logstash-core expects the values in
+        the `add_field` hash to not be integers.
+- [v0.1.0](https://github.com/cyli/logstash-output-slack/releases/tag/v0.1.0):
+    - initial version containing basic slack functionality
