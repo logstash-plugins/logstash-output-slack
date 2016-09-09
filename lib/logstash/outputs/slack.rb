@@ -63,7 +63,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
       payload_json['attachments'] = @attachments
     end
     if event.include?('attachments') and event['attachments'].is_a?(Array)
-      if event['attachments'].any?
+      if event.get('attachments').any?
         # need to convert possibly from Java objects to Ruby Array, because
         # JSON dumps does not work well with Java ArrayLists, etc.
         rubified = JSON.parse(event.to_json())
