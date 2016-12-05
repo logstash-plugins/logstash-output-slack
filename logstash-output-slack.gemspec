@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name            = 'logstash-output-slack'
-  s.version         = '0.1.3'
+  s.version         = '2.0.0'
   s.licenses        = ['MIT','Apache License (2.0)']
   s.summary         = "Write events to Slack"
   s.description     = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program"
@@ -20,17 +20,8 @@ Gem::Specification.new do |s|
 
   # Gem dependencies
 
-  # logstash-core > 2.0.0.snapshot3 requires jrjackson ~> 0.3.5, which requires
-  # JDK7.
-  core_upper_bound = "~> 2.0.0.snapshot3"
-  if RUBY_PLATFORM == 'java'
-    s.platform        = RUBY_PLATFORM
-    if java.lang.System.get_property('java.version') < "1.7"   # JDK6
-      core_upper_bound = "<= 2.0.0.snapshot3"
-    end
-  end
-
-  s.add_runtime_dependency "logstash-core", core_upper_bound, ">= 1.4.0"
+  s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "<= 2.99"
+  
   s.add_runtime_dependency "logstash-codec-plain", "~> 2.0.0", ">= 1.0.0"
   s.add_runtime_dependency "rest-client", '~> 1.8', ">= 1.8.0"
   s.add_development_dependency "logstash-devutils", "~> 0.0.16"
