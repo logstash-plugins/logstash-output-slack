@@ -60,7 +60,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     end
 
     if @attachments and @attachments.any?
-      payload_json['attachments'] = @attachments
+      payload_json['attachments'] = @attachments.map { |x| JSON.parse(event.sprintf(JSON.dump(x))) }
     end
     if event.include?('attachments') and event.get('attachments').is_a?(Array)
       if event.get('attachments').any?
