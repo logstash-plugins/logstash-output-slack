@@ -1,3 +1,6 @@
+## 2.0.2
+  - Enable event based data in attachments 
+
 ## 2.0.1
   - Update codec dependencies
 
