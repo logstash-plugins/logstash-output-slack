@@ -14,7 +14,7 @@ END - GENERATED VARIABLES, DO NOT EDIT!
 
 [id="plugins-{type}-{plugin}"]
 
-=== Slack
+=== Slack output plugin
 
 include::{include_path}/plugin_header.asciidoc[]
 
