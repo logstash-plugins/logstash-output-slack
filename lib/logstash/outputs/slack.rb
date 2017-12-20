@@ -56,7 +56,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     end
 
     if not @icon_url.nil?
-      payload_json['icon_url'] = @icon_url
+      payload_json['icon_url'] = event.sprintf(@icon_url)
     end
 
     if @attachments and @attachments.any?
