@@ -42,6 +42,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
 
     payload_json = Hash.new
     payload_json['text'] = event.sprintf(@format)
+    url = event.sprintf(@url)
 
     if not @channel.nil?
       payload_json['channel'] = event.sprintf(@channel)
@@ -75,7 +76,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
 
     begin
       RestClient.post(
-        @url,
+        url,
         "payload=#{CGI.escape(JSON.dump(payload_json))}",
         :accept => "application/json",
         :'User-Agent' => "logstash-output-slack",

@@ -5,14 +5,14 @@ describe LogStash::Outputs::Slack do
   # Actually do most of the boiler plate by stubbing out the request, running
   # the logstash pipeline, and asserting that a request was made with the
   # expected JSON.
-  def test_one_event(logstash_config, expected_json)
+  def test_one_event(logstash_config, expected_json, expected_url = "http://requestb.in/r9lkbzr9")
     stub_request(:post, "requestb.in").
       to_return(:body => "", :status => 200,
                 :headers => { 'Content-Length' => 0 })
 
     LogStash::Pipeline.new(logstash_config).run
 
-    expect(a_request(:post, "http://requestb.in/r9lkbzr9").
+    expect(a_request(:post, expected_url).
            with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
                 :headers => {
                   'Content-Type' => 'application/x-www-form-urlencoded',
@@ -292,5 +292,35 @@ describe LogStash::Outputs::Slack do
 
       test_one_event(logstash_config, expected_json)
     end
+  end
+
+  it "allows interpolation in url field" do
+    expected_url = "http://incoming-webhook.example.com"
+
+    expected_json = {
+      :text => "This message should show in slack",
+      :attachments => [{:image_url => "http://example.com/image.png"}]
+    }
+
+    logstash_config = <<-CONFIG
+        input {
+          generator {
+            message => "This message should show in slack"
+            add_field => {
+              "[@metadata][slack_url]" => "#{expected_url}"
+            }
+            count => 1
+          }
+        }
+        output {
+          slack {
+            url => "%{[@metadata][slack_url]}"
+            attachments => [
+              {image_url => "http://example.com/image.png"}
+            ]
+          }
+        }
+    CONFIG
+    test_one_event(logstash_config, expected_json, expected_url)
   end
 end
