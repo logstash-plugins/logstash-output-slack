@@ -2,15 +2,20 @@ require_relative "../spec_helper"
 
 describe LogStash::Outputs::Slack do
 
+  subject { described_class.new(config) }
+  let(:config) { { } }
+  let(:event) { LogStash::Event.new(data) }
+  let(:data) { {} }
+
   # Actually do most of the boiler plate by stubbing out the request, running
   # the logstash pipeline, and asserting that a request was made with the
   # expected JSON.
-  def test_one_event(logstash_config, expected_json, expected_url = "http://requestb.in/r9lkbzr9")
+  def test_one_event(event, expected_json, expected_url = "http://requestb.in/r9lkbzr9")
     stub_request(:post, "requestb.in").
       to_return(:body => "", :status => 200,
                 :headers => { 'Content-Length' => 0 })
 
-    LogStash::Pipeline.new(logstash_config).run
+    subject.receive(event)
 
     expect(a_request(:post, expected_url).
            with(:body => "payload=#{CGI.escape(JSON.dump(expected_json))}",
@@ -22,305 +27,231 @@ describe LogStash::Outputs::Slack do
            to have_been_made.once
   end
 
-  before do
+  before(:each) do
+    subject.register
     WebMock.disable_net_connect!
   end
 
-  after do
+  after(:each) do
     WebMock.reset!
     WebMock.allow_net_connect!
   end
 
-  context "passes the right payload to slack and" do
-    it "uses all default values" do
-      expected_json = {
-        :text => "This message should show in slack"
-      }
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-            }
-          }
-      CONFIG
+  context "passes the right payload to slack" do
+    context "simple" do
+      let(:data) { { "message" => "This message should show in slack" } }
+      let(:config) { { "url" => "http://requestb.in/r9lkbzr9" } }
 
-      test_one_event(logstash_config, expected_json)
+      it "uses all default values" do
+        expected_json = { :text => "This message should show in slack" }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "uses and formats all provided values" do
-      expected_json = {
-        :text => "This message should show in slack 3",
-        :channel => "mychannel",
-        :username => "slackbot",
-        :icon_emoji => ":chart_with_upwards_trend:",
-        :icon_url => "http://lorempixel.com/48/48"
-      }
+    context "with multiple interpolations" do
+      let(:data) { {
+        "message" => "This message should show in slack",
+        "x" => "3",
+        "channelname" => "mychannel",
+        "username" => "slackbot"
+      } }
 
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              add_field => {"x" => "3"
-                            "channelname" => "mychannel"
-                            "username" => "slackbot"}
-              count => 1
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              format => "%{message} %{x}"
-              channel => "%{channelname}"
-              username => "%{username}"
-              icon_emoji => ":chart_with_upwards_trend:"
-              icon_url => "http://lorempixel.com/48/48"
-            }
-          }
-      CONFIG
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "format" => "%{message} %{x}",
+        "channel" => "%{channelname}",
+        "username" => "%{username}",
+        "icon_emoji" => ":chart_with_upwards_trend:",
+        "icon_url" => "http://lorempixel.com/48/48",
+      } }
 
-      test_one_event(logstash_config, expected_json)
+      it "uses and formats all provided values" do
+        expected_json = {
+          :text => "This message should show in slack 3",
+          :channel => "mychannel",
+          :username => "slackbot",
+          :icon_emoji => ":chart_with_upwards_trend:",
+          :icon_url => "http://lorempixel.com/48/48"
+        }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "uses and formats all provided values" do
-      expected_json = {
-        :text => "Unformatted message",
-        :channel => "mychannel",
-        :username => "slackbot",
-        :icon_emoji => ":chart_with_upwards_trend:",
-        :icon_url => "http://lorempixel.com/48/48"
-      }
+    context "if the message contains no interpolations" do
 
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              format => "Unformatted message"
-              channel => "mychannel"
-              username => "slackbot"
-              icon_emoji => ":chart_with_upwards_trend:"
-              icon_url => "http://lorempixel.com/48/48"
-            }
-          }
-      CONFIG
+      let(:data) { {
+        "message" => "This message should show in slack"
+      } }
 
-      test_one_event(logstash_config, expected_json)
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "format" => "Unformatted message",
+        "channel" => "mychannel",
+        "username" => "slackbot",
+        "icon_emoji" => ":chart_with_upwards_trend:",
+        "icon_url" => "http://lorempixel.com/48/48"
+      } }
+
+      it "uses and formats all provided values" do
+        expected_json = {
+          :text => "Unformatted message",
+          :channel => "mychannel",
+          :username => "slackbot",
+          :icon_emoji => ":chart_with_upwards_trend:",
+          :icon_url => "http://lorempixel.com/48/48"
+        }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "uses the default attachments if none are in the event" do
-      expected_json = {
-        :text => "This message should show in slack",
-        :attachments => [{:image_url => "http://example.com/image.png"}]
-      }
+    describe "default attachements" do
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => [{ "image_url" => "http://example.com/image.png" }]
+      } }
 
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-            }
+      context "when none are in the event" do
+        let(:data) { { "message" => "This message should show in slack" } }
+        it "uses the default" do
+          expected_json = {
+            :text => "This message should show in slack",
+            :attachments => [{:image_url => "http://example.com/image.png"}]
           }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => [
-                {image_url => "http://example.com/image.png"}
-              ]
-            }
-          }
-      CONFIG
+          test_one_event(event, expected_json)
+        end
+      end
 
-      test_one_event(logstash_config, expected_json)
+      context "when using multiple attachments" do
+        let(:data) { { "message" => "This message should show in slack" } }
+        let(:config) { {
+          "url" => "http://requestb.in/r9lkbzr9",
+          "attachments" => [
+            {"image_url" => "http://example.com/image1.png"},
+            {"image_url" => "http://example.com/image2.png"}
+          ]
+        } }
+        it "sends them" do
+          expected_json = {
+            :text => "This message should show in slack",
+            :attachments => [{:image_url => "http://example.com/image1.png"},
+                             {:image_url => "http://example.com/image2.png"}]
+          }
+          test_one_event(event, expected_json)
+        end
+      end
     end
 
-    it "supports multiple default attachments" do
-      expected_json = {
-        :text => "This message should show in slack",
-        :attachments => [{:image_url => "http://example.com/image1.png"},
-                         {:image_url => "http://example.com/image2.png"}]
-      }
+    context "empty default attachments" do
+      let(:data) { {
+        "message" => "This message should show in slack"
+      }}
 
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => [
-                {image_url => "http://example.com/image1.png"},
-                {image_url => "http://example.com/image2.png"}
-              ]
-            }
-          }
-      CONFIG
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => []
+      }}
 
-      test_one_event(logstash_config, expected_json)
+      it "are ignored" do
+        expected_json = {
+          :text => "This message should show in slack"
+        }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "ignores empty default attachments" do
-      expected_json = {
-        :text => "This message should show in slack"
-      }
+    context "when both event attachments and default attachments are set" do
 
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => []
-            }
-          }
-      CONFIG
+      let(:data) { {
+        "message" => "This message should show in slack",
+        "attachments" => [{"thumb_url" => "http://other.com/thumb.png"}]
+      } }
 
-      test_one_event(logstash_config, expected_json)
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => [
+          {"image_url" => "http://example.com/image1.png"},
+          {"image_url" => "http://example.com/image2.png"}
+        ]
+      } }
+
+      it "event attachements prevail" do
+        expected_json = {
+          :text => "This message should show in slack",
+          :attachments => [{:thumb_url => "http://other.com/thumb.png"}]
+        }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "uses event attachments over default attachments" do
-      expected_json = {
-        :text => "This message should show in slack",
-        :attachments => [{:thumb_url => "http://other.com/thumb.png"}]
-      }
+    context "if event attachments empty" do
 
-      # add_field only takes string values, so we'll have to mutate to JSON
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-              add_field => {
-                attachments => '[{"thumb_url": "http://other.com/thumb.png"}]'
-              }
-            }
-          }
-          filter {
-            json {
-              source => "attachments"
-              target => "attachments"
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => [
-                {image_url => "http://example.com/image1.png"},
-                {image_url => "http://example.com/image2.png"}
-              ]
-            }
-          }
-      CONFIG
+      let(:data) { {
+        "message" => "This message should show in slack",
+        "attachments" => []
+      } }
 
-      test_one_event(logstash_config, expected_json)
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => [
+          {"image_url" => "http://example.com/image1.png"},
+          {"image_url" => "http://example.com/image2.png"}
+        ]
+      } }
+
+      it "erases default attachments" do
+        expected_json = {
+          :text => "This message should show in slack"
+        }
+        test_one_event(event, expected_json)
+      end
     end
 
-    it "erases default attachments if event attachments empty" do
-      expected_json = {
-        :text => "This message should show in slack"
-      }
+    context "when event attachements field isn't an array" do
+      let(:data) { {
+        "message" => "This message should show in slack",
+        "attachments" => "baddata"
+      } }
 
-      # add_field only takes string values, so we'll have to mutate to JSON
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-              add_field => {attachments => '[]'}
-            }
-          }
-          filter {
-            json {
-              source => "attachments"
-              target => "attachments"
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => [
-                {image_url => "http://example.com/image1.png"},
-                {image_url => "http://example.com/image2.png"}
-              ]
-            }
-          }
-      CONFIG
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => [
+          {"image_url" => "http://example.com/image.png"}
+        ]
+      } }
 
-      test_one_event(logstash_config, expected_json)
-    end
 
-    it "ignores event attachment if not array" do
-      expected_json = {
-        :text => "This message should show in slack",
-        :attachments => [{:image_url => "http://example.com/image.png"}]
-      }
-
-      logstash_config = <<-CONFIG
-          input {
-            generator {
-              message => "This message should show in slack"
-              count => 1
-              add_field => {attachments => "baddata"}
-            }
-          }
-          output {
-            slack {
-              url => "http://requestb.in/r9lkbzr9"
-              attachments => [
-                {image_url => "http://example.com/image.png"}
-              ]
-            }
-          }
-      CONFIG
-
-      test_one_event(logstash_config, expected_json)
+      it "is ignored" do
+        expected_json = {
+          :text => "This message should show in slack",
+          :attachments => [{:image_url => "http://example.com/image.png"}]
+        }
+        test_one_event(event, expected_json)
+      end
     end
   end
 
-  it "allows interpolation in url field" do
-    expected_url = "http://incoming-webhook.example.com"
+  describe "interpolation in url field" do
+    let(:expected_url) { "http://incoming-webhook.example.com" }
 
-    expected_json = {
-      :text => "This message should show in slack",
-      :attachments => [{:image_url => "http://example.com/image.png"}]
+    let(:event) {
+      event = LogStash::Event.new("message" => "This message should show in slack")
+      event.set("[@metadata][slack_url]", "#{expected_url}")
+      event
     }
 
-    logstash_config = <<-CONFIG
-        input {
-          generator {
-            message => "This message should show in slack"
-            add_field => {
-              "[@metadata][slack_url]" => "#{expected_url}"
-            }
-            count => 1
-          }
-        }
-        output {
-          slack {
-            url => "%{[@metadata][slack_url]}"
-            attachments => [
-              {image_url => "http://example.com/image.png"}
-            ]
-          }
-        }
-    CONFIG
-    test_one_event(logstash_config, expected_json, expected_url)
+    let(:config) { {
+      "url" => "%{[@metadata][slack_url]}",
+      "attachments" => [
+        {"image_url" => "http://example.com/image.png"}
+      ]
+    } }
+
+    it "allows interpolation in url field" do
+      expected_json = {
+        :text => "This message should show in slack",
+        :attachments => [{:image_url => "http://example.com/image.png"}]
+      }
+      test_one_event(event, expected_json, expected_url)
+    end
   end
 end
