@@ -1,3 +1,6 @@
+## 2.1.0
+  - allow interpolation of event fields in url [#11](https://github.com/logstash-plugins/logstash-output-slack/pull/11)
+
 ## 2.0.2
   - Enable event based data in attachments 
 
