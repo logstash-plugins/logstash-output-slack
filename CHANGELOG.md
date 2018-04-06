@@ -1,3 +1,6 @@
+## 2.1.1
+  - Docs: Set the default_codec doc attribute.
+
 ## 2.1.0
   - allow interpolation of event fields in url [#11](https://github.com/logstash-plugins/logstash-output-slack/pull/11)
 
