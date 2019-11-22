@@ -42,11 +42,11 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
       when String then event.sprintf(node)
       when Array
         node.map! do |obj|
-          recursive_sprintf( event, node )
+          recursive_sprintf( event, obj )
         end
       when Hash
         node.each_pair do |key, value|
-          node[key] = recursive_sprintf( event, node )
+          node[key] = recursive_sprintf( event, value )
         end
      end
      node
