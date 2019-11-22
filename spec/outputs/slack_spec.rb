@@ -228,6 +228,35 @@ describe LogStash::Outputs::Slack do
         test_one_event(event, expected_json)
       end
     end
+
+    context "when attachements contain interpolations" do
+      let(:data) { {
+        "message" => "This message should show in slack",
+        "x" => "3",
+        "image" => "http://example.com/image.png",
+        "textquot" => "Text with \"quotation marks\"",
+      } }
+
+      let(:config) { {
+        "url" => "http://requestb.in/r9lkbzr9",
+        "attachments" => [
+          {"image_url" => "%{image}",
+          "textquot" => "%{textquot}"
+          }
+        ]
+      } }
+
+      it "uses and formats all provided values" do
+        expected_json = {
+          :text => "This message should show in slack",
+          :attachments => [{
+            :image_url => "http://example.com/image.png",
+            :textquot => "Text with \"quotation marks\""
+          }]
+        }
+        test_one_event(event, expected_json)
+      end
+    end
   end
 
   describe "interpolation in url field" do
