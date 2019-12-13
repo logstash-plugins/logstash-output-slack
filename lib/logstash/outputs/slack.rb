@@ -40,17 +40,18 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
   def recursive_sprintf(event, node)
     case node
       when String
-        node = event.sprintf(node)
+        ret = event.sprintf(node)
       when Array
-        node.map! do |obj|
+        ret = node.map do |obj|
           recursive_sprintf( event, obj )
         end
       when Hash
+        ret = Hash.new
         node.each_pair do |key, value|
-          node[key] = recursive_sprintf( event, value )
+          ret[key] = recursive_sprintf( event, value )
         end
      end
-     node
+     ret
   end
 
   public
