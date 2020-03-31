@@ -36,6 +36,24 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     @content_type = "application/x-www-form-urlencoded"
   end # def register
 
+  private
+  def recursive_sprintf(event, node)
+    case node
+      when String
+        ret = event.sprintf(node)
+      when Array
+        ret = node.map do |obj|
+          recursive_sprintf( event, obj )
+        end
+      when Hash
+        ret = Hash.new
+        node.each_pair do |key, value|
+          ret[key] = recursive_sprintf( event, value )
+        end
+     end
+     ret
+  end
+
   public
   def receive(event)
     return unless output?(event)
@@ -61,7 +79,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     end
 
     if @attachments and @attachments.any?
-      payload_json['attachments'] = @attachments.map { |x| JSON.parse(event.sprintf(JSON.dump(x))) }
+      payload_json['attachments'] = recursive_sprintf(event , @attachments)
     end
     if event.include?('attachments') and event.get('attachments').is_a?(Array)
       if event.get('attachments').any?
