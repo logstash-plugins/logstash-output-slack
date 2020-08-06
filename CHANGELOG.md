@@ -1,3 +1,6 @@
+## 2.2.0
+  - Dependencies: Remove constraint on public_suffix and enforce ruby >= 2.x
+
 ## 2.1.1
   - Docs: Set the default_codec doc attribute.
 
