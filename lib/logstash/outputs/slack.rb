@@ -75,6 +75,7 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     end
 
     begin
+      RestClient.proxy = ENV['http_proxy']      
       RestClient.post(
         url,
         "payload=#{CGI.escape(JSON.dump(payload_json))}",
