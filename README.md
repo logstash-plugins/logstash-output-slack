@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/logstash-plugins/logstash-output-slack.svg?branch=master)](https://travis-ci.org/logstash-plugins/logstash-output-slack)
+[![Build Status](https://travis-ci.com/logstash-plugins/logstash-output-slack.svg?branch=master)](https://travis-ci.com/logstash-plugins/logstash-output-slack)
 
 Reviews of the code/contributions are very welcome (particularly with testing!), since I don't really know Ruby.
 
