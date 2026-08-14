@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/logstash-plugins/logstash-output-slack.svg?branch=master)](https://travis-ci.com/logstash-plugins/logstash-output-slack)
+[![Unit Tests](https://github.com/logstash-plugins/logstash-output-slack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/logstash-plugins/logstash-output-slack/actions/workflows/unit-tests.yml)
 
 Reviews of the code/contributions are very welcome (particularly with testing!), since I don't really know Ruby.
 
