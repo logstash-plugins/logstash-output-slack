@@ -44,10 +44,6 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
     payload_json['text'] = event.sprintf(@format)
     url = event.sprintf(@url)
 
-    if not @channel.nil?
-      payload_json['channel'] = event.sprintf(@channel)
-    end
-
     if not @username.nil?
       payload_json['username'] = event.sprintf(@username)
     end
@@ -74,20 +70,33 @@ class LogStash::Outputs::Slack < LogStash::Outputs::Base
       end
     end
 
-    begin
-      RestClient.post(
-        url,
-        "payload=#{CGI.escape(JSON.dump(payload_json))}",
-        :accept => "application/json",
-        :'User-Agent' => "logstash-output-slack",
-        :content_type => @content_type) { |response, request, result, &block|
-          if response.code != 200
-            @logger.warn("Got a #{response.code} response: #{response}")
-          end
-        }
-    rescue Exception => e
-      @logger.warn("Unhandled exception", :exception => e,
-                   :stacktrace => e.backtrace)
+    if @channel.nil?
+      @channel = ""
+    end
+
+    event.sprintf(@channel).split(',', -1).each do |channel|
+
+      if channel == ""
+        payload_json.delete('channel')
+      else
+        payload_json['channel'] = channel;
+      end
+
+      begin
+        RestClient.post(
+          url,
+          "payload=#{CGI.escape(JSON.dump(payload_json))}",
+          :accept => "application/json",
+          :'User-Agent' => "logstash-output-slack",
+          :content_type => @content_type) { |response, request, result, &block|
+            if response.code != 200
+              @logger.warn("Got a #{response.code} response: #{response}")
+            end
+          }
+      rescue Exception => e
+        @logger.warn("Unhandled exception", :exception => e,
+                     :stacktrace => e.backtrace)
+      end
     end
   end # def receive
 end # class LogStash::Outputs::Slack
